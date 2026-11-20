@@ -529,6 +529,10 @@
     const $ = (id) => document.getElementById(id);
     // 녹화용 자동 플레이 (주소 뒤에 ?demo=1): 가방이 알아서 맞는 짐을 받고 틀린 짐을 피해요. 응모 번호는 나오지 않아요
     const DEMO = new URLSearchParams(location.search).get("demo") === "1";
+    if (DEMO)
+      document
+        .querySelectorAll(".hint, .note")
+        .forEach((e) => (e.hidden = true)); // 영상엔 안내 문구를 빼요
 
     // 세 단계 = 스탁사인 가방 3개. good = 받으면 점수, bad = 받으면 목숨 −1 (n: 화면에 뜨는 이유)
     const STAGES = [
