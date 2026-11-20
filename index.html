@@ -832,12 +832,36 @@
 
     const bagTop = () => H - bag.h - H * 0.05;
 
+    // 배경 워터마크: 비스듬히 반복되는 STARK SEIN 워드마크 (아주 옅게)
+    function drawWatermark() {
+      ctx.save();
+      ctx.globalAlpha = 0.075;
+      ctx.fillStyle = css("--ink");
+      ctx.font = `700 ${Math.round(W * 0.085)}px "Cormorant Garamond", "Times New Roman", serif`;
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0.2em";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.translate(W / 2, H / 2);
+      ctx.rotate(-Math.PI / 10);
+      const stepX = W * 0.7,
+        stepY = W * 0.19;
+      for (let row = -5; row <= 5; row++)
+        for (let col = -2; col <= 2; col++)
+          ctx.fillText(
+            "STARK SEIN",
+            col * stepX + (row % 2 ? stepX / 2 : 0),
+            row * stepY,
+          );
+      ctx.restore();
+    }
+
     function draw() {
       if (!W) return;
       ctx.fillStyle = css("--belt");
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = css("--belt-stripe");
       for (let y = -40 + beltOff; y < H; y += 40) ctx.fillRect(0, y, W, 14);
+      drawWatermark();
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -961,6 +985,7 @@
     cv.addEventListener("pointerdown", pointer);
 
     new ResizeObserver(resize).observe(stageBox);
+    document.fonts?.ready.then(draw); // 워터마크 글씨체가 늦게 오면 한 번 더 그려요
     matchMedia("(prefers-color-scheme: dark)").addEventListener?.(
       "change",
       draw,
