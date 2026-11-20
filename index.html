@@ -461,15 +461,25 @@
   }
   .card-bags {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     justify-content: center;
     align-items: flex-end;
-    padding: 0 14px 10px;
+    padding: 4px 14px 12px;
+    height: 108px;
+    box-sizing: border-box;
   }
   .card-bags img {
-    height: 46px;
-    max-width: 30%;
+    height: 62px;
+    width: auto;
+    max-width: 36%;
     object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.16));
+  }
+  .card-bags img.tall {
+    height: 92px;
+  }
+  .intro-img.tall {
+    height: 130px;
   }
 </style>
 
@@ -578,6 +588,7 @@
         bagW: 0.22,
         ratio: 0.62,
         img: "img/bag_carrier.png",
+        tall: true,
         mouth: 0.27,
         color: "--bag3",
         good: [
@@ -656,6 +667,8 @@
       cv.width = W * dpr;
       cv.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high"; // 큰 사진을 작게 그릴 때 덜 깨져요
       sizeBag();
       draw();
     }
@@ -708,7 +721,7 @@
       const s = st();
       overlay(`
       ${msg ? `<p class="clear">${msg}</p>` : ""}
-      <img class="intro-img" src="${s.img}" alt="스탁사인 ${s.name}">
+      <img class="intro-img ${s.tall ? "tall" : ""}" src="${s.img}" alt="스탁사인 ${s.name}">
       <p class="eyebrow">${si + 1}단계 · 스탁사인 ${s.name}</p>
       <h2>${s.brief}</h2>
       <div class="rules">
@@ -792,7 +805,7 @@
       <div class="card" role="group" aria-label="완주 카드">
         <div class="card-eyebrow"><img class="band-logo" src="img/logo_word.png" alt="STARK SEIN"><span>· 세 가방 짐 싸기</span></div>
         <div class="card-title">완주!</div>
-        <div class="card-bags">${STAGES.map((s) => `<img src="${s.img}" alt="스탁사인 ${s.name}">`).join("")}</div>
+        <div class="card-bags">${STAGES.map((s) => `<img class="${s.tall ? "tall" : ""}" src="${s.img}" alt="스탁사인 ${s.name}">`).join("")}</div>
         <div class="card-row"><span>점수</span><b>${score.toLocaleString("ko-KR")}점</b></div>
         <div class="card-row"><span>응모 번호</span><b class="code">${makeCode()}</b></div>
         <div class="card-foot">${date} · @starksein_travels</div>
