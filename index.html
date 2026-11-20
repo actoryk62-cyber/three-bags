@@ -15,60 +15,82 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link
   rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;700&family=Cormorant+Garamond:wght@600;700&display=swap"
 />
 <style>
-  /* Layout: one centered play column — stage strip, scoreboard, 3:4 canvas "baggage belt", overlays for intro / clear / finish card */
+  /* Layout: one centered play column — stage strip, scoreboard, 3:4 canvas "baggage belt", overlays for intro / clear / finish card.
+     Palette = 스탁사인 브랜드 가이드(2026-11-17) 페이지와 같은 실버·차콜·딥그린, 금색은 제품 자수 색 */
   :root {
-    --bg: #eef3f6; /* airport floor, cool grey-blue */
+    --bg: #eef0f1; /* 문스톤 실버 바닥 */
     --panel: #ffffff;
-    --ink: #17232c;
-    --muted: #5b6b77;
-    --line: #d3dde4;
-    --accent: #f2a516; /* boarding-pass yellow */
-    --good: #1f8a5b;
-    --bad: #d2463b;
-    --belt: #dfe7ec;
-    --belt-stripe: #cfd9e0;
-    --bag1: #2f4a6d; /* 크로스백: navy */
-    --bag2: #4f7a5a; /* 보스턴백: olive */
-    --bag3: #f2a516; /* 캐리어: yellow */
-    --font-display: "Do Hyeon", "Noto Sans KR", system-ui, sans-serif;
+    --ink: #17191c; /* 토파즈 블랙 */
+    --muted: #5b6168;
+    --line: #cfd4d8;
+    --frame: #6c747b; /* 알루미늄 프레임 */
+    --accent: #2f6b4f; /* 다크 에메랄드 */
+    --gold: #9a5b12; /* 자수 금색 */
+    --good: #2f6b4f;
+    --bad: #b3362c;
+    --btn: #17191c;
+    --btn-fg: #ffffff;
+    --band: #17191c;
+    --band-fg: #eceef0;
+    --belt: #e3e6e8;
+    --belt-stripe: #d5d9dc;
+    --bag1: #17191c; /* 크로스백 대체 그림 */
+    --bag2: #2f6b4f; /* 보스턴백 대체 그림 */
+    --bag3: #8e969d; /* 캐리어 대체 그림 */
+    --font-display: "Black Han Sans", "IBM Plex Sans KR", system-ui, sans-serif;
+    --font-wordmark: "Cormorant Garamond", "Times New Roman", serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --font-body:
-      "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+      "IBM Plex Sans KR", "Noto Sans KR", system-ui, -apple-system, "Segoe UI",
+      sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0f171d;
-      --panel: #18232b;
-      --ink: #e8eef2;
-      --muted: #96a6b2;
-      --line: #2a3843;
-      --accent: #f5b335;
-      --good: #43c08a;
+      --bg: #121416;
+      --panel: #1b1e21;
+      --ink: #eceef0;
+      --muted: #a2a9b0;
+      --line: #30353a;
+      --frame: #8e969d;
+      --accent: #7fc4a0;
+      --gold: #e0a85c;
+      --good: #7fc4a0;
       --bad: #f06a5e;
-      --belt: #1c2932;
-      --belt-stripe: #22313b;
-      --bag1: #6f93c4;
-      --bag2: #79b08a;
-      --bag3: #f5b335;
+      --btn: #eceef0;
+      --btn-fg: #121416;
+      --band: #0c0e10;
+      --band-fg: #eceef0;
+      --belt: #1f2326;
+      --belt-stripe: #272c30;
+      --bag1: #eceef0;
+      --bag2: #7fc4a0;
+      --bag3: #8e969d;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0f171d;
-    --panel: #18232b;
-    --ink: #e8eef2;
-    --muted: #96a6b2;
-    --line: #2a3843;
-    --accent: #f5b335;
-    --good: #43c08a;
+    --bg: #121416;
+    --panel: #1b1e21;
+    --ink: #eceef0;
+    --muted: #a2a9b0;
+    --line: #30353a;
+    --frame: #8e969d;
+    --accent: #7fc4a0;
+    --gold: #e0a85c;
+    --good: #7fc4a0;
     --bad: #f06a5e;
-    --belt: #1c2932;
-    --belt-stripe: #22313b;
-    --bag1: #6f93c4;
-    --bag2: #79b08a;
-    --bag3: #f5b335;
+    --btn: #eceef0;
+    --btn-fg: #121416;
+    --band: #0c0e10;
+    --band-fg: #eceef0;
+    --belt: #1f2326;
+    --belt-stripe: #272c30;
+    --bag1: #eceef0;
+    --bag2: #7fc4a0;
+    --bag3: #8e969d;
     color-scheme: dark;
   }
   [hidden] {
@@ -102,17 +124,34 @@
     gap: 8px;
     flex-wrap: wrap;
   }
+  .brand {
+    font-family: var(--font-wordmark);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 2px;
+  }
   h1 {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: 2rem;
+    font-size: 1.8rem;
     margin: 0;
     letter-spacing: 0.01em;
+    line-height: 1.35;
   }
   .gate {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--muted);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
+    text-align: right;
+  }
+  .wm {
+    font-family: var(--font-wordmark);
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
   }
 
   .steps {
@@ -136,9 +175,9 @@
     padding: 6px 8px;
   }
   .steps li b {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.75rem;
     flex: none;
     width: 20px;
     height: 20px;
@@ -151,14 +190,15 @@
   .steps li.on {
     color: var(--ink);
     border-color: var(--accent);
+    font-weight: 700;
   }
   .steps li.on b {
     background: var(--accent);
-    color: #1b1404;
+    color: #fff;
   }
   .steps li.done b {
-    background: var(--good);
-    color: #fff;
+    background: var(--band);
+    color: var(--band-fg);
   }
 
   .board {
@@ -184,9 +224,9 @@
     letter-spacing: 0.06em;
   }
   .stat b {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.3rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.15rem;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
@@ -242,7 +282,8 @@
   .overlay p.eyebrow {
     font-size: 0.72rem;
     letter-spacing: 0.08em;
-    color: var(--muted);
+    color: var(--gold);
+    font-weight: 700;
   }
   .rules {
     display: grid;
@@ -272,14 +313,16 @@
     color: var(--bad);
   }
   button {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
     border: 0;
     border-radius: 999px;
     cursor: pointer;
-    padding: 10px 28px;
-    background: var(--accent);
-    color: #1b1404;
+    padding: 12px 30px;
+    background: var(--btn);
+    color: var(--btn-fg);
   }
   button:focus-visible {
     outline: 3px solid var(--ink);
@@ -296,12 +339,16 @@
     text-align: left;
   }
   .card-eyebrow {
-    background: var(--accent);
-    color: #1b1404;
+    background: var(--band);
+    color: var(--band-fg);
     font-size: 0.68rem;
     letter-spacing: 0.1em;
-    padding: 8px 14px;
-    font-weight: 700;
+    padding: 9px 14px;
+    font-weight: 500;
+  }
+  .card-eyebrow .wm {
+    color: var(--gold);
+    font-size: 0.95rem;
   }
   .card-title {
     font-family: var(--font-display);
@@ -321,16 +368,17 @@
   }
   .card-row b {
     color: var(--ink);
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 1.3rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.15rem;
     font-variant-numeric: tabular-nums;
   }
   .card-row b.code {
-    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 1.05rem;
     letter-spacing: 0.06em;
     font-weight: 700;
+    color: var(--accent);
   }
   .card-foot {
     padding: 8px 14px 12px;
@@ -395,8 +443,11 @@
 
 <div class="wrap">
   <header>
-    <h1>세 가방 짐 싸기</h1>
-    <span class="gate">@starksein_travels · 짐 싸기 이벤트</span>
+    <div>
+      <p class="brand">Stark Sein</p>
+      <h1>세 가방 짐 싸기</h1>
+    </div>
+    <span class="gate">@starksein_travels<br />짐 싸기 이벤트</span>
   </header>
 
   <ol class="steps" id="steps" aria-label="단계">
@@ -704,7 +755,7 @@
         date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
       overlay(`
       <div class="card" role="group" aria-label="완주 카드">
-        <div class="card-eyebrow">STARKSEIN TRAVELS · 세 가방 짐 싸기</div>
+        <div class="card-eyebrow"><span class="wm">Stark Sein</span> · 세 가방 짐 싸기</div>
         <div class="card-title">완주!</div>
         <div class="card-bags">${STAGES.map((s) => `<img src="${s.img}" alt="스탁사인 ${s.name}">`).join("")}</div>
         <div class="card-row"><span>점수</span><b>${score.toLocaleString("ko-KR")}점</b></div>
