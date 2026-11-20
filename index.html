@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>세 가방 짐 싸기</title>
+<meta name="description" content="스탁사인 크로스백·보스턴백·캐리어 3단계로 여행 짐을 싸는 @starksein_travels 이벤트 게임">
+<style>
+  :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  img { max-width: 100%; }
+</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;700&display=swap"
+/>
+<style>
+  /* Layout: one centered play column — stage strip, scoreboard, 3:4 canvas "baggage belt", overlays for intro / clear / finish card */
+  :root {
+    --bg: #eef3f6; /* airport floor, cool grey-blue */
+    --panel: #ffffff;
+    --ink: #17232c;
+    --muted: #5b6b77;
+    --line: #d3dde4;
+    --accent: #f2a516; /* boarding-pass yellow */
+    --good: #1f8a5b;
+    --bad: #d2463b;
+    --belt: #dfe7ec;
+    --belt-stripe: #cfd9e0;
+    --bag1: #2f4a6d; /* 크로스백: navy */
+    --bag2: #4f7a5a; /* 보스턴백: olive */
+    --bag3: #f2a516; /* 캐리어: yellow */
+    --font-display: "Do Hyeon", "Noto Sans KR", system-ui, sans-serif;
+    --font-body:
+      "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f171d;
+      --panel: #18232b;
+      --ink: #e8eef2;
+      --muted: #96a6b2;
+      --line: #2a3843;
+      --accent: #f5b335;
+      --good: #43c08a;
+      --bad: #f06a5e;
+      --belt: #1c2932;
+      --belt-stripe: #22313b;
+      --bag1: #6f93c4;
+      --bag2: #79b08a;
+      --bag3: #f5b335;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f171d;
+    --panel: #18232b;
+    --ink: #e8eef2;
+    --muted: #96a6b2;
+    --line: #2a3843;
+    --accent: #f5b335;
+    --good: #43c08a;
+    --bad: #f06a5e;
+    --belt: #1c2932;
+    --belt-stripe: #22313b;
+    --bag1: #6f93c4;
+    --bag2: #79b08a;
+    --bag3: #f5b335;
+    color-scheme: dark;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2rem;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+  .gate {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .steps li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 8px;
+  }
+  .steps li b {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 0.8rem;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--line);
+    color: var(--ink);
+  }
+  .steps li.on {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+  .steps li.on b {
+    background: var(--accent);
+    color: #1b1404;
+  }
+  .steps li.done b {
+    background: var(--good);
+    color: #fff;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .stat {
+    background: var(--panel);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .stat span {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .stat b {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.3rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    max-width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    touch-action: none;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px;
+    text-align: center;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+  }
+  .overlay h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.7rem;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .overlay p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 32ch;
+    font-size: 0.9rem;
+  }
+  .overlay p.clear {
+    color: var(--good);
+    font-weight: 700;
+  }
+  .overlay p.eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .rules {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    max-width: 330px;
+    font-size: 0.8rem;
+  }
+  .rules div {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    line-height: 1.7;
+    min-width: 0;
+  }
+  .rules strong {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+  .ok strong {
+    color: var(--good);
+  }
+  .no strong {
+    color: var(--bad);
+  }
+  button {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    padding: 10px 28px;
+    background: var(--accent);
+    color: #1b1404;
+  }
+  button:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 300px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: left;
+  }
+  .card-eyebrow {
+    background: var(--accent);
+    color: #1b1404;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    padding: 8px 14px;
+    font-weight: 700;
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    padding: 10px 14px 4px;
+    line-height: 1.1;
+  }
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 14px;
+    border-top: 1px dashed var(--line);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .card-row b {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.3rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-row b.code {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .card-foot {
+    padding: 8px 14px 12px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .toast {
+    position: absolute;
+    left: 50%;
+    top: 14px;
+    transform: translateX(-50%);
+    max-width: 90%;
+    background: var(--bad);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .toast.show {
+    opacity: 1;
+  }
+  .hint,
+  .note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+    margin: 0;
+    line-height: 1.6;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      transition: none;
+    }
+  }
+  .intro-img {
+    height: 84px;
+    max-width: 70%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.18));
+  }
+  .card-bags {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 0 14px 10px;
+  }
+  .card-bags img {
+    height: 46px;
+    max-width: 30%;
+    object-fit: contain;
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>세 가방 짐 싸기</h1>
+    <span class="gate">@starksein_travels · 짐 싸기 이벤트</span>
+  </header>
+
+  <ol class="steps" id="steps" aria-label="단계">
+    <li class="on"><b>1</b>크로스백</li>
+    <li><b>2</b>보스턴백</li>
+    <li><b>3</b>캐리어</li>
+  </ol>
+
+  <div class="board" aria-live="polite">
+    <div class="stat"><span>가방</span><b id="bagName">크로스백</b></div>
+    <div class="stat"><span>남은 시간</span><b id="time">20</b></div>
+    <div class="stat"><span>목숨</span><b id="lives">❤❤❤</b></div>
+    <div class="stat"><span>점수</span><b id="score">0</b></div>
+  </div>
+
+  <div class="stage" id="stageBox">
+    <canvas id="cv" aria-label="떨어지는 짐을 가방으로 받는 게임 화면"></canvas>
+    <div class="toast" id="toast"></div>
+    <div class="overlay" id="overlay"></div>
+  </div>
+
+  <p class="hint">PC: ← → 방향키 또는 마우스 · 휴대폰: 화면을 좌우로 끌기</p>
+  <p class="note">
+    기내 반입 기준은 항공사·공항 안내를 따랐어요 (2026년 11월 기준). 항공사마다
+    다를 수 있으니 출발 전에 확인해 주세요.
+  </p>
+</div>
+
+<script>
+  (() => {
+    const cv = document.getElementById("cv");
+    const ctx = cv.getContext("2d");
+    const stageBox = document.getElementById("stageBox");
+    const $ = (id) => document.getElementById(id);
+
+    // 세 단계 = 스탁사인 가방 3개. good = 받으면 점수, bad = 받으면 목숨 −1 (n: 화면에 뜨는 이유)
+    const STAGES = [
+      {
+        name: "인비즈 크로스백",
+        short: "크로스백",
+        brief: "비행기에서 바로 꺼낼 것만 넣어요",
+        time: 20,
+        bagW: 0.26,
+        ratio: 0.8,
+        img: "img/bag_crossbag.png",
+        mouth: 0.1,
+        color: "--bag1",
+        good: [
+          { e: "🛂", n: "여권", p: 30 },
+          { e: "📱", n: "휴대폰", p: 20 },
+          { e: "🎧", n: "이어폰", p: 10 },
+          { e: "💳", n: "카드지갑", p: 20 },
+          { e: "🔋", n: "보조배터리", p: 20 },
+          { e: "💄", n: "립밤", p: 10 },
+        ],
+        bad: [
+          { e: "💻", s: "노트북", n: "노트북은 크로스백에 안 들어가요" },
+          { e: "👟", s: "운동화", n: "운동화는 크로스백에 안 들어가요" },
+          { e: "🔪", s: "칼", n: "칼은 기내 반입 금지예요" },
+          { e: "🧴", s: "큰 로션", n: "100ml 넘는 액체는 기내 반입 금지예요" },
+        ],
+      },
+      {
+        name: "폴드나인 보스턴백",
+        short: "보스턴백",
+        brief: "1박 2일 짐을 넣어요",
+        time: 20,
+        bagW: 0.34,
+        ratio: 0.5,
+        img: "img/bag_boston.png",
+        mouth: 0.12,
+        color: "--bag2",
+        good: [
+          { e: "👕", n: "옷", p: 10 },
+          { e: "🪥", n: "세면도구", p: 10 },
+          { e: "🔌", n: "충전기", p: 20 },
+          { e: "📷", n: "카메라", p: 20 },
+          { e: "💊", n: "상비약", p: 10 },
+          { e: "🧦", n: "양말", p: 10 },
+        ],
+        bad: [
+          { e: "🧨", s: "폭죽", n: "폭죽은 비행기에 실을 수 없어요" },
+          { e: "✂️", s: "큰 가위", n: "날 6cm 넘는 가위는 위탁으로 보내요" },
+          { e: "🧴", s: "큰 로션", n: "100ml 넘는 액체는 기내 반입 금지예요" },
+          { e: "🪑", s: "캠핑의자", n: "캠핑의자는 보스턴백에 안 들어가요" },
+        ],
+      },
+      {
+        name: "타프 캐리어",
+        short: "캐리어",
+        brief: "일주일 여행 짐을 넣어요",
+        time: 25,
+        bagW: 0.22,
+        ratio: 0.62,
+        img: "img/bag_carrier.png",
+        mouth: 0.27,
+        color: "--bag3",
+        good: [
+          { e: "👗", n: "옷", p: 10 },
+          { e: "👟", n: "신발", p: 20 },
+          { e: "🎁", n: "선물", p: 30 },
+          { e: "☂️", n: "우산", p: 10 },
+          { e: "🧥", n: "겉옷", p: 10 },
+          { e: "📚", n: "책", p: 10 },
+        ],
+        bad: [
+          {
+            e: "🔋",
+            s: "보조배터리",
+            n: "보조배터리는 캐리어 말고 몸에 지녀요",
+          },
+          { e: "🔪", s: "칼", n: "칼은 기내 반입 금지예요" },
+          { e: "🧨", s: "폭죽", n: "폭죽은 비행기에 실을 수 없어요" },
+          { e: "🏄", s: "서핑보드", n: "서핑보드는 캐리어에 안 들어가요" },
+        ],
+      },
+    ];
+    const BAD_P = 0.3; // 떨어지는 짐 중 '틀린 짐' 비율
+
+    // 가방 사진(배경 뺀 PNG). 아직 안 불러와졌으면 아래 drawBag()의 그림으로 대신 그려요
+    const IMGS = STAGES.map((s) => {
+      const i = new Image();
+      i.onload = () => {
+        sizeBag();
+        draw();
+      };
+      i.src = s.img;
+      return i;
+    });
+    const bagImg = () => {
+      const i = IMGS[si];
+      return i && i.complete && i.naturalWidth ? i : null;
+    };
+
+    let W = 0,
+      H = 0,
+      dpr = 1;
+    let state = "idle"; // idle | play | clear | over | done
+    let si = 0; // 현재 단계
+    let items = [],
+      bag = { x: 0, w: 0, h: 0 },
+      keys = {};
+    let score = 0,
+      stageStart = 0,
+      lives = 3,
+      timeLeft = 20,
+      spawnT = 0,
+      last = 0,
+      beltOff = 0,
+      flash = 0;
+    let best = 0;
+    try {
+      best = +localStorage.getItem("threeBagsBest") || 0;
+    } catch (e) {}
+
+    const css = (n) =>
+      getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const st = () => STAGES[si];
+
+    function sizeBag() {
+      const im = bagImg();
+      bag.w = W * st().bagW;
+      bag.h = bag.w * (im ? im.naturalHeight / im.naturalWidth : st().ratio);
+      bag.x = Math.max(bag.w / 2, Math.min(W - bag.w / 2, bag.x || W / 2));
+    }
+    function resize() {
+      const r = stageBox.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = r.width;
+      H = r.height;
+      cv.width = W * dpr;
+      cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      sizeBag();
+      draw();
+    }
+
+    function spawn() {
+      const prog = 1 - timeLeft / st().time; // 0 → 1, 단계가 진행될수록 빨라져요
+      const level = 1 + si * 0.3 + prog * 0.5;
+      const isBad = Math.random() < BAD_P;
+      const pool = isBad ? st().bad : st().good;
+      const kind = pool[(Math.random() * pool.length) | 0];
+      const size = W * 0.1;
+      items.push({
+        ...kind,
+        bad: isBad,
+        x: size / 2 + Math.random() * (W - size),
+        y: -size,
+        s: size,
+        v: H * (0.22 + Math.random() * 0.12) * level,
+        r: (Math.random() - 0.5) * 0.6,
+      });
+    }
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 1500);
+    }
+
+    function hud() {
+      $("bagName").textContent = st().short;
+      $("score").textContent = score;
+      $("time").textContent = Math.ceil(timeLeft);
+      $("lives").textContent = "❤".repeat(lives) + "♡".repeat(3 - lives);
+      [...$("steps").children].forEach((li, i) => {
+        li.classList.toggle("on", i === si);
+        li.classList.toggle("done", i < si);
+      });
+    }
+
+    function overlay(html) {
+      const o = $("overlay");
+      o.innerHTML = html;
+      o.hidden = false;
+    }
+
+    function showIntro(msg) {
+      const s = st();
+      overlay(`
+      ${msg ? `<p class="clear">${msg}</p>` : ""}
+      <img class="intro-img" src="${s.img}" alt="스탁사인 ${s.name}">
+      <p class="eyebrow">${si + 1}단계 · 스탁사인 ${s.name}</p>
+      <h2>${s.brief}</h2>
+      <div class="rules">
+        <div class="ok"><strong>받으면 +점수</strong>${s.good.map((g) => `${g.e} ${g.n}`).join(" · ")}</div>
+        <div class="no"><strong>받으면 −목숨</strong>${s.bad.map((b) => `${b.e} ${b.s}`).join(" · ")}</div>
+      </div>
+      <button id="go" type="button">${si === 0 ? "게임 시작" : "짐 싸기 시작"}</button>`);
+      $("go").addEventListener("click", startStage);
+    }
+
+    function startStage() {
+      items = [];
+      lives = 3;
+      timeLeft = st().time;
+      spawnT = 0;
+      flash = 0;
+      stageStart = score;
+      bag.x = W / 2;
+      sizeBag();
+      state = "play";
+      $("overlay").hidden = true;
+      hud();
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+
+    function stageClear() {
+      state = "clear";
+      const gained = score - stageStart,
+        done = st().short;
+      if (si < STAGES.length - 1) {
+        si++;
+        hud();
+        showIntro(`${done} 완료! +${gained}점`);
+      } else finish();
+    }
+
+    function gameOver() {
+      state = "over";
+      overlay(`
+      <h2>보안 검색에서 멈췄어요</h2>
+      <p>틀린 짐이 3번 들어갔어요. ${st().short}부터 다시 싸 볼까요?</p>
+      <button id="go" type="button">이 가방 다시 싸기</button>`);
+      $("go").addEventListener("click", () => {
+        score = stageStart;
+        startStage();
+      });
+    }
+
+    // 응모 번호 = SKT-{완주 시각(분, 36진수)}{무작위 2자}-{확인 2자}. 확인 2자는 check()로 다시 계산해 맞는지 볼 수 있어요.
+    function check(s) {
+      let h = 2166136261;
+      for (const ch of s + "|STARKSEIN-TRAVELS-2026") {
+        h ^= ch.charCodeAt(0);
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return (h % 1296).toString(36).toUpperCase().padStart(2, "0");
+    }
+    function makeCode() {
+      const m = Math.floor(Date.now() / 60000)
+        .toString(36)
+        .toUpperCase();
+      const r = Math.floor(Math.random() * 1296)
+        .toString(36)
+        .toUpperCase()
+        .padStart(2, "0");
+      return `SKT-${m}${r}-${check(m + r)}`;
+    }
+
+    function finish() {
+      state = "done";
+      if (score > best) {
+        best = score;
+        try {
+          localStorage.setItem("threeBagsBest", best);
+        } catch (e) {}
+      }
+      const d = new Date(),
+        date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+      overlay(`
+      <div class="card" role="group" aria-label="완주 카드">
+        <div class="card-eyebrow">STARKSEIN TRAVELS · 세 가방 짐 싸기</div>
+        <div class="card-title">완주!</div>
+        <div class="card-bags">${STAGES.map((s) => `<img src="${s.img}" alt="스탁사인 ${s.name}">`).join("")}</div>
+        <div class="card-row"><span>점수</span><b>${score.toLocaleString("ko-KR")}점</b></div>
+        <div class="card-row"><span>응모 번호</span><b class="code">${makeCode()}</b></div>
+        <div class="card-foot">${date} · @starksein_travels</div>
+      </div>
+      <p>이 화면을 캡처해 스토리에 올리고 @starksein_travels 를 태그해 주세요.</p>
+      <button id="go" type="button">다시 하기</button>`);
+      $("go").addEventListener("click", () => {
+        si = 0;
+        score = 0;
+        hud();
+        sizeBag();
+        draw();
+        showIntro();
+      });
+    }
+
+    function loop(now) {
+      if (state !== "play") return;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      timeLeft -= dt;
+      if (timeLeft <= 0) {
+        timeLeft = 0;
+        hud();
+        draw();
+        return stageClear();
+      }
+
+      const speed = W * 1.3;
+      if (keys.ArrowLeft) bag.x -= speed * dt;
+      if (keys.ArrowRight) bag.x += speed * dt;
+      bag.x = Math.max(bag.w / 2, Math.min(W - bag.w / 2, bag.x));
+
+      spawnT -= dt;
+      if (spawnT <= 0) {
+        spawn();
+        spawnT = Math.max(
+          0.35,
+          0.85 - si * 0.1 - (1 - timeLeft / st().time) * 0.3,
+        );
+      }
+
+      const mouth = bagTop() + bag.h * (bagImg() ? st().mouth : 0); // 가방 입구 높이
+      for (const it of items) {
+        it.y += it.v * dt;
+        if (
+          !it.done &&
+          it.y + it.s * 0.35 >= mouth &&
+          it.y < mouth + Math.max(bag.h * 0.35, it.s) &&
+          Math.abs(it.x - bag.x) < bag.w / 2 + it.s * 0.2
+        ) {
+          it.done = true;
+          if (it.bad) {
+            lives--;
+            flash = 0.35;
+            toast(it.n);
+            if (lives <= 0) {
+              hud();
+              draw();
+              return gameOver();
+            }
+          } else score += it.p;
+        }
+      }
+      items = items.filter((it) => !it.done && it.y < H + it.s);
+      beltOff = (beltOff + dt * 40) % 40;
+      flash = Math.max(0, flash - dt);
+      hud();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    const bagTop = () => H - bag.h - H * 0.05;
+
+    function draw() {
+      if (!W) return;
+      ctx.fillStyle = css("--belt");
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = css("--belt-stripe");
+      for (let y = -40 + beltOff; y < H; y += 40) ctx.fillRect(0, y, W, 14);
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (const it of items) {
+        ctx.save();
+        ctx.translate(it.x, it.y);
+        ctx.rotate(it.r * Math.sin(it.y / 60));
+        ctx.font = `${it.s}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+        ctx.fillText(it.e, 0, 0);
+        ctx.restore();
+      }
+      drawBag();
+    }
+
+    function drawBag() {
+      const bw = bag.w,
+        bh = bag.h,
+        bx = bag.x - bw / 2,
+        by = bagTop();
+      const im = bagImg();
+      if (im) {
+        // 제품 사진으로 그려요. 틀린 짐을 받으면 빨간 테두리 빛 + 살짝 흔들림
+        ctx.save();
+        if (flash > 0) {
+          ctx.shadowColor = css("--bad");
+          ctx.shadowBlur = 26;
+          ctx.translate(Math.sin(flash * 60) * 4, 0);
+        }
+        ctx.drawImage(im, bx, by, bw, bh);
+        ctx.restore();
+        return;
+      }
+      const col = flash > 0 ? css("--bad") : css(st().color);
+      ctx.strokeStyle = css("--ink");
+      ctx.fillStyle = css("--ink");
+      ctx.lineWidth = 3;
+      if (si === 0) {
+        // 크로스백: 긴 끈 + 덮개
+        ctx.beginPath();
+        ctx.moveTo(bx + bw * 0.12, by + 2);
+        ctx.quadraticCurveTo(bag.x, by - bh * 1.1, bx + bw * 0.88, by + 2);
+        ctx.stroke();
+        ctx.fillStyle = col;
+        roundRect(bx, by, bw, bh, bh * 0.18);
+        ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,0.16)";
+        roundRect(bx, by, bw, bh * 0.42, bh * 0.18);
+        ctx.fill();
+        ctx.fillStyle = css("--ink");
+        ctx.beginPath();
+        ctx.arc(bag.x, by + bh * 0.42, 3, 0, 7);
+        ctx.fill();
+      } else if (si === 1) {
+        // 보스턴백: 둥근 몸통 + 손잡이 두 개 + 지퍼
+        ctx.beginPath();
+        ctx.moveTo(bx + bw * 0.28, by + 2);
+        ctx.quadraticCurveTo(
+          bx + bw * 0.38,
+          by - bh * 0.55,
+          bx + bw * 0.48,
+          by + 2,
+        );
+        ctx.moveTo(bx + bw * 0.52, by + 2);
+        ctx.quadraticCurveTo(
+          bx + bw * 0.62,
+          by - bh * 0.55,
+          bx + bw * 0.72,
+          by + 2,
+        );
+        ctx.stroke();
+        ctx.fillStyle = col;
+        roundRect(bx, by, bw, bh, bh * 0.45);
+        ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,0.14)";
+        ctx.fillRect(bx + bw * 0.12, by + bh * 0.42, bw * 0.76, 3);
+      } else {
+        // 캐리어: 손잡이 + 세로 홈 + 바퀴
+        ctx.fillRect(bag.x - bw * 0.18, by - bh * 0.28, bw * 0.06, bh * 0.3);
+        ctx.fillRect(bag.x + bw * 0.12, by - bh * 0.28, bw * 0.06, bh * 0.3);
+        ctx.fillRect(bag.x - bw * 0.18, by - bh * 0.3, bw * 0.36, bh * 0.07);
+        ctx.fillStyle = col;
+        roundRect(bx, by, bw, bh, bh * 0.18);
+        ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,0.12)";
+        for (let i = 1; i < 4; i++)
+          ctx.fillRect(bx + (bw * i) / 4 - 1, by + bh * 0.12, 2, bh * 0.76);
+        ctx.fillStyle = css("--ink");
+        ctx.beginPath();
+        ctx.arc(bx + bw * 0.15, by + bh + 4, 4, 0, 7);
+        ctx.arc(bx + bw * 0.85, by + bh + 4, 4, 0, 7);
+        ctx.fill();
+      }
+    }
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    // 조작
+    addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        keys[e.key] = true;
+        e.preventDefault();
+      }
+    });
+    addEventListener("keyup", (e) => {
+      keys[e.key] = false;
+    });
+    function pointer(e) {
+      if (state !== "play") return;
+      const r = cv.getBoundingClientRect();
+      bag.x = Math.max(bag.w / 2, Math.min(W - bag.w / 2, e.clientX - r.left));
+    }
+    cv.addEventListener("pointermove", pointer);
+    cv.addEventListener("pointerdown", pointer);
+
+    new ResizeObserver(resize).observe(stageBox);
+    matchMedia("(prefers-color-scheme: dark)").addEventListener?.(
+      "change",
+      draw,
+    );
+    new MutationObserver(draw).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    // 처음 화면: 1단계 가방과 예시 짐
+    resize();
+    items = [STAGES[0].good[0], STAGES[0].bad[3], STAGES[0].good[4]].map(
+      (k, i) => ({
+        ...k,
+        x: W * (0.25 + i * 0.25),
+        y: H * (0.18 + i * 0.12),
+        s: W * 0.1,
+        r: 0,
+      }),
+    );
+    draw();
+    hud();
+    showIntro("가방 3개를 모두 싸면 완주 카드와 응모 번호가 나와요.");
+  })();
+</script>
+</body>
+</html>
