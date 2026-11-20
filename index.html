@@ -40,6 +40,7 @@
     --bag1: #17191c; /* 크로스백 대체 그림 */
     --bag2: #2f6b4f; /* 보스턴백 대체 그림 */
     --bag3: #8e969d; /* 캐리어 대체 그림 */
+    --logo-filter: none; /* 다크 모드에서는 검정 로고를 흰색으로 뒤집어요 */
     --font-display: "Black Han Sans", "IBM Plex Sans KR", system-ui, sans-serif;
     --font-wordmark: "Cormorant Garamond", "Times New Roman", serif;
     --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -68,6 +69,7 @@
       --bag1: #eceef0;
       --bag2: #7fc4a0;
       --bag3: #8e969d;
+      --logo-filter: invert(1);
       color-scheme: dark;
     }
   }
@@ -91,6 +93,7 @@
     --bag1: #eceef0;
     --bag2: #7fc4a0;
     --bag3: #8e969d;
+    --logo-filter: invert(1);
     color-scheme: dark;
   }
   [hidden] {
@@ -125,13 +128,20 @@
     flex-wrap: wrap;
   }
   .brand {
-    font-family: var(--font-wordmark);
-    font-weight: 600;
-    font-size: 0.95rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin: 0 0 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+  }
+  .logo-mark {
+    height: 28px;
+    width: auto;
+    filter: var(--logo-filter);
+  }
+  .logo-word {
+    height: 17px;
+    width: auto;
+    filter: var(--logo-filter);
   }
   h1 {
     font-family: var(--font-display);
@@ -346,9 +356,31 @@
     padding: 9px 14px;
     font-weight: 500;
   }
-  .card-eyebrow .wm {
-    color: var(--gold);
-    font-size: 0.95rem;
+  .card-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .band-logo {
+    height: 15px;
+    width: auto;
+    filter: invert(1);
+  }
+  .card {
+    position: relative;
+  }
+  .card::after {
+    /* 완주 카드 안쪽에도 엠블럼을 아주 옅게 */
+    content: "";
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    width: 86px;
+    height: 86px;
+    background: url("img/logo_mark.png") center / contain no-repeat;
+    opacity: 0.07;
+    filter: var(--logo-filter);
+    pointer-events: none;
   }
   .card-title {
     font-family: var(--font-display);
@@ -444,7 +476,10 @@
 <div class="wrap">
   <header>
     <div>
-      <p class="brand">Stark Sein</p>
+      <p class="brand">
+        <img class="logo-mark" src="img/logo_mark.png" alt="" />
+        <img class="logo-word" src="img/logo_word.png" alt="STARK SEIN" />
+      </p>
       <h1>세 가방 짐 싸기</h1>
     </div>
     <span class="gate">@starksein_travels<br />짐 싸기 이벤트</span>
@@ -755,7 +790,7 @@
         date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
       overlay(`
       <div class="card" role="group" aria-label="완주 카드">
-        <div class="card-eyebrow"><span class="wm">Stark Sein</span> · 세 가방 짐 싸기</div>
+        <div class="card-eyebrow"><img class="band-logo" src="img/logo_word.png" alt="STARK SEIN"><span>· 세 가방 짐 싸기</span></div>
         <div class="card-title">완주!</div>
         <div class="card-bags">${STAGES.map((s) => `<img src="${s.img}" alt="스탁사인 ${s.name}">`).join("")}</div>
         <div class="card-row"><span>점수</span><b>${score.toLocaleString("ko-KR")}점</b></div>
@@ -833,24 +868,42 @@
     const bagTop = () => H - bag.h - H * 0.05;
 
     // 배경 워터마크: 비스듬히 반복되는 STARK SEIN 워드마크 (아주 옅게)
+    // 배경 워터마크: 스탁사인 로고(엠블럼+워드마크)를 비스듬히 반복, 아주 옅게. 색은 테마의 글자색으로 입혀요
+    const LOGO = new Image();
+    LOGO.onload = draw;
+    LOGO.src = "img/logo_full.png";
+    const tintCache = {};
+    function tintedLogo(color) {
+      if (tintCache[color]) return tintCache[color];
+      const c = document.createElement("canvas");
+      c.width = LOGO.naturalWidth;
+      c.height = LOGO.naturalHeight;
+      const x = c.getContext("2d");
+      x.drawImage(LOGO, 0, 0);
+      x.globalCompositeOperation = "source-in";
+      x.fillStyle = color;
+      x.fillRect(0, 0, c.width, c.height);
+      return (tintCache[color] = c);
+    }
     function drawWatermark() {
+      if (!LOGO.complete || !LOGO.naturalWidth) return;
+      const t = tintedLogo(css("--ink"));
+      const w = W * 0.36,
+        h = (w * t.height) / t.width;
+      const stepX = w * 1.4,
+        stepY = h * 1.45;
       ctx.save();
-      ctx.globalAlpha = 0.075;
-      ctx.fillStyle = css("--ink");
-      ctx.font = `700 ${Math.round(W * 0.085)}px "Cormorant Garamond", "Times New Roman", serif`;
-      if ("letterSpacing" in ctx) ctx.letterSpacing = "0.2em";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      ctx.globalAlpha = 0.08;
       ctx.translate(W / 2, H / 2);
-      ctx.rotate(-Math.PI / 10);
-      const stepX = W * 0.7,
-        stepY = W * 0.19;
-      for (let row = -5; row <= 5; row++)
+      ctx.rotate(-Math.PI / 12);
+      for (let row = -3; row <= 3; row++)
         for (let col = -2; col <= 2; col++)
-          ctx.fillText(
-            "STARK SEIN",
-            col * stepX + (row % 2 ? stepX / 2 : 0),
-            row * stepY,
+          ctx.drawImage(
+            t,
+            col * stepX + (row % 2 ? stepX / 2 : 0) - w / 2,
+            row * stepY - h / 2,
+            w,
+            h,
           );
       ctx.restore();
     }
